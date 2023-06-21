@@ -98,6 +98,9 @@ public class leftSideSplineAuto extends LinearOpMode {
     private final int state = 0;
     private AtomicBoolean test;
     private AsyncThreaded secondThread;
+    AsyncThreaded standardLoopThread;
+    int conesStacked = 6;
+    boolean finishedStacking = false;
 
     //
     private TouchSensor turretSensor;
@@ -353,6 +356,65 @@ public class leftSideSplineAuto extends LinearOpMode {
         }
         return radians;//its radians you dumbass
     }
+
+    public void runMainLoop(){
+            this.score();
+            this.preIntakeMode(5);
+            while (!linSlideCheck()) {
+                sleep(1);
+            }
+            latchEngaged = false;
+            sleep(450);
+            this.armPosition = 9;
+            linSlideReset();
+            intakeOut(C.getTargetFrontArmPosition(5));
+            sleep(350);
+            this.targetTurretPosition = 0.5;
+            sleep(200);
+            for(int j = 4; j>=0; j--) {
+                sleep(275);
+                this.targetTurretosition = 0.5;
+                intakeBack();
+                targetPitchPosition = 0.55;
+                sleep(1000);
+                this.clawOpen = true;
+                sleep(450);
+
+                targetPitchPosition = 0.36;
+                targetTurretPosition = 0.83;
+                sleep(150);
+                if(j == 0) break;
+                preIntakeMode(j);
+                this.score();
+                while(!linSlideCheck()){
+                    sleep(1);
+                }
+                latchEngaged = false;
+                sleep(350);
+                linSlideReset();
+                intakeOut(C.getTargetFrontArmPosition(j));
+                sleep(400);
+            }
+            preIntakeMode();
+            this.score();
+            while(!linSlideCheck()){
+                sleep(1);
+            }
+            latchEngaged = false;
+            sleep(350);
+            linSlideReset();
+            sleep(450);
+            greatReset();
+            targetPitchPosition = 0.7;
+            targetTurretPosition = 0.23;
+            finishedStacking = true;
+    } 
+
+    void runOtherLoop(int pos){
+        //TODO Write THIS
+    }
+
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -435,55 +497,29 @@ public class leftSideSplineAuto extends LinearOpMode {
             this.targetTurretPosition = 0.8;
 //            drive.followTrajectory(traj1);
 
-            this.score();
-            this.preIntakeMode(5);
-            while (!linSlideCheck()) {
-                sleep(1);
-            }
-            latchEngaged = false;
-            sleep(450);
-            this.armPosition = 9;
-            linSlideReset();
-            intakeOut(C.getTargetFrontArmPosition(5));
-            sleep(350);
-            this.targetTurretPosition = 0.5;
-            sleep(200);
-            for(int j = 4; j>=0; j--) {
-                sleep(275);
-                this.targetTurretPosition = 0.5;
-                intakeBack();
-                targetPitchPosition = 0.55;
-                sleep(1000);
-                this.clawOpen = true;
-                sleep(450);
+            //TODO here:
+            standardLoopThread = new AsyncThreaded(() -> {
+                }).then(() -> {
+                    runMainLoop();
+                });
+            AsyncThreaded obsticleAvoidanceThrad = new AsyncThreaded(() -> {}).then(() -> {
+                    while (!finishedStacking && this.opModeInInit() || this.opModeIsActive() && !AsyncThreaded.stopped) {
+                        
+                        //TODO ping for detection
+                        boolean isDetected = false;
+                        if(isDetected){
+                            standardLoopThread.thread.kill();
+                            //TODO reset everything
 
-                targetPitchPosition = 0.36;
-                targetTurretPosition = 0.83;
-                sleep(150);
-                if(j == 0) break;
-                preIntakeMode(j);
-                this.score();
-                while(!linSlideCheck()){
-                    sleep(1);
-                }
-                latchEngaged = false;
-                sleep(350);
-                linSlideReset();
-                intakeOut(C.getTargetFrontArmPosition(j));
-                sleep(400);
-            }
-            preIntakeMode();
-            this.score();
-            while(!linSlideCheck()){
-                sleep(1);
-            }
-            latchEngaged = false;
-            sleep(350);
-            linSlideReset();
-            sleep(450);
-            greatReset();
-            targetPitchPosition = 0.7;
-            targetTurretPosition = 0.23;
+                            for(int i = conesStacked; i > 0; i--)
+                                runOtherLoop(); 
+                            finishedStacking = true;
+                            break;
+                        }
+                    }
+                });
+
+            while(true) if(finishedStacking == true) break;
 
             if(randomization == 3) {
                 drive.followTrajectory(park3);
@@ -521,6 +557,7 @@ public class leftSideSplineAuto extends LinearOpMode {
         //this.latchEngaged = true;
         depositPosition = 2;
         this.targetDepositPosition = (C.depositPositions[depositPosition]) - 0.17;
+        conesStacked--;
         sleep(250);
     }
 
