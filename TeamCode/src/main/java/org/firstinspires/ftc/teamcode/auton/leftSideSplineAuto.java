@@ -3,31 +3,23 @@ package org.firstinspires.ftc.teamcode.auton;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.C;
-import org.firstinspires.ftc.teamcode.drive.Drive;
-import org.firstinspires.ftc.teamcode.drive.driveimpl.PosePidDrive;
+import org.firstinspires.ftc.teamcode.analogDistanceDriver;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.drivetrain.drivetrainimpl.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.input.AsyncThreaded;
 
-import org.firstinspires.ftc.teamcode.input.Controller;
-import org.firstinspires.ftc.teamcode.input.controllerimpl.GamepadController;
-import org.firstinspires.ftc.teamcode.output.goBildaTouchDriver;
-import org.firstinspires.ftc.teamcode.output.magnetTouch;
-import org.firstinspires.ftc.teamcode.output.motorimpl.DcMotorExMotor;
 import org.firstinspires.ftc.teamcode.output.motorimpl.DoesntResetDcMotorExMotor;
 import org.firstinspires.ftc.teamcode.output.motorimpl.ServoMotor;
 import org.firstinspires.ftc.teamcode.pid.Pid;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.utils.M;
-import org.firstinspires.ftc.teamcode.components.CameraComponent;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -35,45 +27,19 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.firstinspires.ftc.robotcore.external.*;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.C;
-import org.firstinspires.ftc.teamcode.drive.Drive;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.driveimpl.PosePidDrive;
-import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.drivetrain.drivetrainimpl.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.input.AsyncThreaded;
-import org.firstinspires.ftc.teamcode.output.goBildaTouchDriver;
-import org.firstinspires.ftc.teamcode.output.motorimpl.DcMotorExMotor;
-import org.firstinspires.ftc.teamcode.output.motorimpl.ServoMotor;
-import org.firstinspires.ftc.teamcode.pid.Pid;
-import org.firstinspires.ftc.teamcode.utils.M;
-import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Autonomous
 public class leftSideSplineAuto extends LinearOpMode {
+
+    analogDistanceDriver Sensor2;
+    double distance;
+
     Pose2d initialPosition = new Pose2d(-36, -60, Math.toRadians(-90));
     Pose2d secondPosition = new Pose2d(-36, -24, Math.toRadians(-90));
     Pose2d finalPosition = new Pose2d(-24, -10, Math.toRadians(180));
@@ -100,6 +66,7 @@ public class leftSideSplineAuto extends LinearOpMode {
     private AsyncThreaded secondThread;
     AsyncThreaded standardLoopThread;
     int conesStacked = 6;
+    boolean hasIntaked = false;
     boolean finishedStacking = false;
 
     //
@@ -227,6 +194,7 @@ public class leftSideSplineAuto extends LinearOpMode {
                 .setUpperBound(C.frontArmUB);
     }
     private void initSensor() {
+        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "name"));
     }
     private void initAll() {
         this.initPID();
@@ -277,6 +245,7 @@ public class leftSideSplineAuto extends LinearOpMode {
         sleep(500);
         frontArmPosition = 1;
         moveFrontArm();
+        hasIntaked = true;
         sleep(100);
         targetArmPosition = 0;
     }
@@ -373,7 +342,7 @@ public class leftSideSplineAuto extends LinearOpMode {
             sleep(200);
             for(int j = 4; j>=0; j--) {
                 sleep(275);
-                this.targetTurretosition = 0.5;
+                this.targetTurretPosition = 0.5;
                 intakeBack();
                 targetPitchPosition = 0.55;
                 sleep(1000);
@@ -411,7 +380,9 @@ public class leftSideSplineAuto extends LinearOpMode {
     } 
 
     void runOtherLoop(int pos){
-        //TODO Write THIS
+        String s = "Test";
+//        String ss = toString(pos);
+        telemetry.addLine(s);
     }
 
 
@@ -506,13 +477,17 @@ public class leftSideSplineAuto extends LinearOpMode {
                     while (!finishedStacking && this.opModeInInit() || this.opModeIsActive() && !AsyncThreaded.stopped) {
                         
                         //TODO ping for detection
-                        boolean isDetected = false;
-                        if(isDetected){
-                            standardLoopThread.thread.kill();
+                        distance = Sensor2.getDistance();
+                        telemetry.addData("distance", distance);
+                        telemetry.update();
+
+                        if(distance < 10){
+                            standardLoopThread.stop();
                             //TODO reset everything
 
+
                             for(int i = conesStacked; i > 0; i--)
-                                runOtherLoop(); 
+                                runOtherLoop(i);
                             finishedStacking = true;
                             break;
                         }
@@ -558,6 +533,7 @@ public class leftSideSplineAuto extends LinearOpMode {
         depositPosition = 2;
         this.targetDepositPosition = (C.depositPositions[depositPosition]) - 0.17;
         conesStacked--;
+        hasIntaked = true;
         sleep(250);
     }
 

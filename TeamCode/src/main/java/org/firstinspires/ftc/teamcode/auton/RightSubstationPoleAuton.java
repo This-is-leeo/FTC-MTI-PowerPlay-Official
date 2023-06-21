@@ -378,6 +378,9 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             }
         });
         telemetry.setMsTransmissionInterval(50);
+
+        this.initAll();
+        this.initDrivetrain();
         while(opModeInInit()) {
 
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
@@ -400,8 +403,6 @@ public class RightSubstationPoleAuton extends LinearOpMode {
                     randomization = 3;
                 }
             telemetry.update();
-            this.initAll();
-            this.initDrivetrain();
             drive.setPoseEstimate(new Pose2d(36, -60, Math.toRadians(-90)));
             traj = drive.trajectoryBuilder(drive.getPoseEstimate())
                     .lineToLinearHeading(new Pose2d(36, -2, Math.toRadians(-90)))
@@ -433,7 +434,7 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             this.secondThread.run();
             drive.followTrajectory(traj);
             this.targetPitchPosition = 0.39;
-            this.targetTurretPosition = 0.71;
+            this.targetTurretPosition = 0.64;
             drive.followTrajectory(traj1);
 
             this.score();

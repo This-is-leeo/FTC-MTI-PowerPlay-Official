@@ -52,6 +52,10 @@ public class AsyncThreaded {
         return thatAsync;
     }
 
+    public void stop(){
+        this.thread.stop();
+    }
+
     public void run() {
         this.thread.start();
     }
