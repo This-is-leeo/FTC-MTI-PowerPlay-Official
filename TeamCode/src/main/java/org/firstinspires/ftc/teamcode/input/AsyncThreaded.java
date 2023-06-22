@@ -53,7 +53,7 @@ public class AsyncThreaded {
     }
 
     public void stop(){
-        this.thread.stop();
+        thread.interrupt();
     }
 
     public void run() {

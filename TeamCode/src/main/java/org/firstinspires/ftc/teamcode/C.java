@@ -78,7 +78,7 @@ public class C {
         else if(i == 2)return 0.08;
         else if(i == 1)return 0.04;
         else if(i == 0) return 0.1;
-        else if(i == 5) return 0.17;
+        else if(i == 5) return 0.185;
         else return 0;
     }
     //Motor

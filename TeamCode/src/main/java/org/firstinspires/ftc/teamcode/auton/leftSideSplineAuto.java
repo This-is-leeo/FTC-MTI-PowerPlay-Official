@@ -194,7 +194,7 @@ public class leftSideSplineAuto extends LinearOpMode {
                 .setUpperBound(C.frontArmUB);
     }
     private void initSensor() {
-        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "name"));
+        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "RightSensor"));
     }
     private void initAll() {
         this.initPID();
@@ -228,6 +228,9 @@ public class leftSideSplineAuto extends LinearOpMode {
     }
 
     private void updateTelemetry() {
+        distance = Sensor2.getDistance();
+        telemetry.addData("ConesStackerd", conesStacked);
+        telemetry.addData("distance", distance);
         telemetry.addData("pitch TS", this.pitchTS);
         telemetry.addData("latchEngaged" , this.latchEngaged);
         telemetry.addData("turret pos", this.turret.getCurrentPosition());
@@ -298,8 +301,9 @@ public class leftSideSplineAuto extends LinearOpMode {
         this.updatePosition();
         this.updateMotor();
         this.updateServo();
-        this.updateTelemetry();
+//        this.updateTelemetry();
         //this.updateDrivetrain();
+
     }
     private void preIntakeMode(){
         this.targetFrontArmPosition = 0.6;
@@ -380,9 +384,8 @@ public class leftSideSplineAuto extends LinearOpMode {
     } 
 
     void runOtherLoop(int pos){
-        String s = "Test";
-//        String ss = toString(pos);
-        telemetry.addLine(s);
+        //TODO create a loop that intakes then outakes
+        this.updateTelemetry();
     }
 
 
@@ -468,34 +471,44 @@ public class leftSideSplineAuto extends LinearOpMode {
             this.targetTurretPosition = 0.8;
 //            drive.followTrajectory(traj1);
 
-            //TODO here:
             standardLoopThread = new AsyncThreaded(() -> {
                 }).then(() -> {
                     runMainLoop();
                 });
-            AsyncThreaded obsticleAvoidanceThrad = new AsyncThreaded(() -> {}).then(() -> {
-                    while (!finishedStacking && this.opModeInInit() || this.opModeIsActive() && !AsyncThreaded.stopped) {
-                        
-                        //TODO ping for detection
+
+           AsyncThreaded obsticleAvoidanceThrad = new AsyncThreaded(() -> {}).then(() -> {
+                    while (!finishedStacking && this.opModeInInit() || this.opModeIsActive() && !AsyncThreaded.stopped ) {
                         distance = Sensor2.getDistance();
-                        telemetry.addData("distance", distance);
-                        telemetry.update();
+                        telemetry.addData("ConesStackerd", conesStacked);
 
-                        if(distance < 10){
+                        distance = Sensor2.getDistance();
+                        //TODO TUNE THIS
+                        if(distance < 25){
+                            telemetry.addData("STOPPING THREAD", distance);
+                            telemetry.update();
                             standardLoopThread.stop();
-                            //TODO reset everything
-
-
-                            for(int i = conesStacked; i > 0; i--)
+                            //TODO reset all positions
+                            if(hasIntaked){
+                                //TODO spit one out
+                                conesStacked--;
+                            }
+                            //TODO reset all position
+                            for(int i = conesStacked; i > 0; i--) {
                                 runOtherLoop(i);
+                            }
                             finishedStacking = true;
+                            telemetry.addData("Killing Other Thread", distance);
+                            telemetry.update();
+                            //TODO GET TELEMETREY WORKING
                             break;
                         }
                     }
                 });
+            standardLoopThread.run();
+            obsticleAvoidanceThrad.run();
 
             while(true) if(finishedStacking == true) break;
-
+            sleep(5000);
             if(randomization == 3) {
                 drive.followTrajectory(park3);
             } else if(randomization ==2){

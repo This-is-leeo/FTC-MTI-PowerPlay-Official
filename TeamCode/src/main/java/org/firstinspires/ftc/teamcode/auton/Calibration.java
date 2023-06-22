@@ -531,6 +531,7 @@ public class Calibration extends LinearOpMode {
     }
     private void updateSensor() {
         pitchTS = this.pitchTouchSensor.check();
+
     }
 
     private void updateControllers() {

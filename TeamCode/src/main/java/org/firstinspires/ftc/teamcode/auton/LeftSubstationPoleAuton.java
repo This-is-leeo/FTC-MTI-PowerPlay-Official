@@ -431,7 +431,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
             this.secondThread.run();
             drive.followTrajectory(traj);
             this.targetPitchPosition = 0.39;
-            this.targetTurretPosition = 0.41;
+            this.targetTurretPosition = 0.4;
             drive.followTrajectory(traj1);
 
             this.score();
@@ -446,14 +446,16 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
             intakeOut(C.getTargetFrontArmPosition(5));
             sleep(550);
             for(int j = 4; j>=0; j--) {
+                this.targetTurretPosition = 0.5;
                 sleep(125);
                 intakeBack();
                 targetPitchPosition = 0.55;
                 sleep(850);
                 this.clawOpen = true;
-                sleep(450);
+                sleep(500);
 
                 targetPitchPosition = 0.39;
+                this.targetTurretPosition = 0.4;
                 if(j == 0) break;
                 preIntakeMode(j);
                 this.score();
