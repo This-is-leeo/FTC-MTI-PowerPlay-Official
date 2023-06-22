@@ -378,6 +378,9 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             }
         });
         telemetry.setMsTransmissionInterval(50);
+
+        this.initAll();
+        this.initDrivetrain();
         while(opModeInInit()) {
 
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
@@ -400,8 +403,6 @@ public class RightSubstationPoleAuton extends LinearOpMode {
                     randomization = 3;
                 }
             telemetry.update();
-            this.initAll();
-            this.initDrivetrain();
             drive.setPoseEstimate(new Pose2d(36, -60, Math.toRadians(-90)));
             traj = drive.trajectoryBuilder(drive.getPoseEstimate())
                     .lineToLinearHeading(new Pose2d(36, -2, Math.toRadians(-90)))
@@ -413,7 +414,7 @@ public class RightSubstationPoleAuton extends LinearOpMode {
                     .lineToLinearHeading(new Pose2d(11.5, -12, Math.toRadians(0)))
                     .build();
             park2 = drive.trajectoryBuilder(traj1.end())
-                    .lineToLinearHeading(new Pose2d(36, -12.1, Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(40, -12.1, Math.toRadians(-90)))
                     .build();
             park3 = drive.trajectoryBuilder(traj1.end())
                     .lineToLinearHeading(new Pose2d(59, -12, Math.toRadians(0)))
@@ -433,7 +434,7 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             this.secondThread.run();
             drive.followTrajectory(traj);
             this.targetPitchPosition = 0.39;
-            this.targetTurretPosition = 0.71;
+            this.targetTurretPosition = 0.64;
             drive.followTrajectory(traj1);
 
             this.score();
@@ -448,13 +449,15 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             intakeOut(C.getTargetFrontArmPosition(5));
             sleep(550);
             for(int j = 4; j>=0; j--) {
+
+                targetTurretPosition = 0.55;
                 sleep(125);
                 intakeBack();
                 targetPitchPosition = 0.55;
                 sleep(900);
                 this.clawOpen = true;
-                sleep(350);
-
+                targetTurretPosition = 0.64;
+                sleep(400);
                 targetPitchPosition = 0.39;
                 if(j == 0) break;
                 preIntakeMode(j);
@@ -484,6 +487,7 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             if(randomization == 3) {
                 drive.followTrajectory(park3);
             } else if(randomization ==2){
+                sleep(200);
                 drive.followTrajectory(park2);
             } else if(randomization ==1) {
                 drive.followTrajectory(park1);

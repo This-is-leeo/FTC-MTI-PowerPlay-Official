@@ -3,31 +3,23 @@ package org.firstinspires.ftc.teamcode.auton;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.C;
-import org.firstinspires.ftc.teamcode.drive.Drive;
-import org.firstinspires.ftc.teamcode.drive.driveimpl.PosePidDrive;
+import org.firstinspires.ftc.teamcode.analogDistanceDriver;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.drivetrain.drivetrainimpl.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.input.AsyncThreaded;
 
-import org.firstinspires.ftc.teamcode.input.Controller;
-import org.firstinspires.ftc.teamcode.input.controllerimpl.GamepadController;
-import org.firstinspires.ftc.teamcode.output.goBildaTouchDriver;
-import org.firstinspires.ftc.teamcode.output.magnetTouch;
-import org.firstinspires.ftc.teamcode.output.motorimpl.DcMotorExMotor;
 import org.firstinspires.ftc.teamcode.output.motorimpl.DoesntResetDcMotorExMotor;
 import org.firstinspires.ftc.teamcode.output.motorimpl.ServoMotor;
 import org.firstinspires.ftc.teamcode.pid.Pid;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.utils.M;
-import org.firstinspires.ftc.teamcode.components.CameraComponent;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -35,45 +27,19 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.firstinspires.ftc.robotcore.external.*;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.C;
-import org.firstinspires.ftc.teamcode.drive.Drive;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.driveimpl.PosePidDrive;
-import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.drivetrain.drivetrainimpl.MecanumDrivetrain;
-import org.firstinspires.ftc.teamcode.input.AsyncThreaded;
-import org.firstinspires.ftc.teamcode.output.goBildaTouchDriver;
-import org.firstinspires.ftc.teamcode.output.motorimpl.DcMotorExMotor;
-import org.firstinspires.ftc.teamcode.output.motorimpl.ServoMotor;
-import org.firstinspires.ftc.teamcode.pid.Pid;
-import org.firstinspires.ftc.teamcode.utils.M;
-import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Autonomous
 public class leftSideSplineAuto extends LinearOpMode {
+
+    analogDistanceDriver Sensor2;
+    double distance;
+
     Pose2d initialPosition = new Pose2d(-36, -60, Math.toRadians(-90));
     Pose2d secondPosition = new Pose2d(-36, -24, Math.toRadians(-90));
     Pose2d finalPosition = new Pose2d(-24, -10, Math.toRadians(180));
@@ -98,6 +64,10 @@ public class leftSideSplineAuto extends LinearOpMode {
     private final int state = 0;
     private AtomicBoolean test;
     private AsyncThreaded secondThread;
+    AsyncThreaded standardLoopThread;
+    int conesStacked = 6;
+    boolean hasIntaked = false;
+    boolean finishedStacking = false;
 
     //
     private TouchSensor turretSensor;
@@ -224,6 +194,7 @@ public class leftSideSplineAuto extends LinearOpMode {
                 .setUpperBound(C.frontArmUB);
     }
     private void initSensor() {
+        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "RightSensor"));
     }
     private void initAll() {
         this.initPID();
@@ -257,6 +228,9 @@ public class leftSideSplineAuto extends LinearOpMode {
     }
 
     private void updateTelemetry() {
+        distance = Sensor2.getDistance();
+        telemetry.addData("ConesStackerd", conesStacked);
+        telemetry.addData("distance", distance);
         telemetry.addData("pitch TS", this.pitchTS);
         telemetry.addData("latchEngaged" , this.latchEngaged);
         telemetry.addData("turret pos", this.turret.getCurrentPosition());
@@ -274,6 +248,7 @@ public class leftSideSplineAuto extends LinearOpMode {
         sleep(500);
         frontArmPosition = 1;
         moveFrontArm();
+        hasIntaked = true;
         sleep(100);
         targetArmPosition = 0;
     }
@@ -326,8 +301,9 @@ public class leftSideSplineAuto extends LinearOpMode {
         this.updatePosition();
         this.updateMotor();
         this.updateServo();
-        this.updateTelemetry();
+//        this.updateTelemetry();
         //this.updateDrivetrain();
+
     }
     private void preIntakeMode(){
         this.targetFrontArmPosition = 0.6;
@@ -353,6 +329,66 @@ public class leftSideSplineAuto extends LinearOpMode {
         }
         return radians;//its radians you dumbass
     }
+
+    public void runMainLoop(){
+            this.score();
+            this.preIntakeMode(5);
+            while (!linSlideCheck()) {
+                sleep(1);
+            }
+            latchEngaged = false;
+            sleep(450);
+            this.armPosition = 9;
+            linSlideReset();
+            intakeOut(C.getTargetFrontArmPosition(5));
+            sleep(350);
+            this.targetTurretPosition = 0.5;
+            sleep(200);
+            for(int j = 4; j>=0; j--) {
+                sleep(275);
+                this.targetTurretPosition = 0.5;
+                intakeBack();
+                targetPitchPosition = 0.55;
+                sleep(1000);
+                this.clawOpen = true;
+                sleep(450);
+
+                targetPitchPosition = 0.36;
+                targetTurretPosition = 0.83;
+                sleep(150);
+                if(j == 0) break;
+                preIntakeMode(j);
+                this.score();
+                while(!linSlideCheck()){
+                    sleep(1);
+                }
+                latchEngaged = false;
+                sleep(350);
+                linSlideReset();
+                intakeOut(C.getTargetFrontArmPosition(j));
+                sleep(400);
+            }
+            preIntakeMode();
+            this.score();
+            while(!linSlideCheck()){
+                sleep(1);
+            }
+            latchEngaged = false;
+            sleep(350);
+            linSlideReset();
+            sleep(450);
+            greatReset();
+            targetPitchPosition = 0.7;
+            targetTurretPosition = 0.23;
+            finishedStacking = true;
+    } 
+
+    void runOtherLoop(int pos){
+        //TODO create a loop that intakes then outakes
+        this.updateTelemetry();
+    }
+
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -435,56 +471,44 @@ public class leftSideSplineAuto extends LinearOpMode {
             this.targetTurretPosition = 0.8;
 //            drive.followTrajectory(traj1);
 
-            this.score();
-            this.preIntakeMode(5);
-            while (!linSlideCheck()) {
-                sleep(1);
-            }
-            latchEngaged = false;
-            sleep(450);
-            this.armPosition = 9;
-            linSlideReset();
-            intakeOut(C.getTargetFrontArmPosition(5));
-            sleep(350);
-            this.targetTurretPosition = 0.5;
-            sleep(200);
-            for(int j = 4; j>=0; j--) {
-                sleep(275);
-                this.targetTurretPosition = 0.5;
-                intakeBack();
-                targetPitchPosition = 0.55;
-                sleep(1000);
-                this.clawOpen = true;
-                sleep(450);
+            standardLoopThread = new AsyncThreaded(() -> {
+                }).then(() -> {
+                    runMainLoop();
+                });
 
-                targetPitchPosition = 0.36;
-                targetTurretPosition = 0.83;
-                sleep(150);
-                if(j == 0) break;
-                preIntakeMode(j);
-                this.score();
-                while(!linSlideCheck()){
-                    sleep(1);
-                }
-                latchEngaged = false;
-                sleep(350);
-                linSlideReset();
-                intakeOut(C.getTargetFrontArmPosition(j));
-                sleep(400);
-            }
-            preIntakeMode();
-            this.score();
-            while(!linSlideCheck()){
-                sleep(1);
-            }
-            latchEngaged = false;
-            sleep(350);
-            linSlideReset();
-            sleep(450);
-            greatReset();
-            targetPitchPosition = 0.7;
-            targetTurretPosition = 0.23;
+           AsyncThreaded obsticleAvoidanceThrad = new AsyncThreaded(() -> {}).then(() -> {
+                    while (!finishedStacking && this.opModeInInit() || this.opModeIsActive() && !AsyncThreaded.stopped ) {
+                        distance = Sensor2.getDistance();
+                        telemetry.addData("ConesStackerd", conesStacked);
 
+                        distance = Sensor2.getDistance();
+                        //TODO TUNE THIS
+                        if(distance < 25){
+                            telemetry.addData("STOPPING THREAD", distance);
+                            telemetry.update();
+                            standardLoopThread.stop();
+                            //TODO reset all positions
+                            if(hasIntaked){
+                                //TODO spit one out
+                                conesStacked--;
+                            }
+                            //TODO reset all position
+                            for(int i = conesStacked; i > 0; i--) {
+                                runOtherLoop(i);
+                            }
+                            finishedStacking = true;
+                            telemetry.addData("Killing Other Thread", distance);
+                            telemetry.update();
+                            //TODO GET TELEMETREY WORKING
+                            break;
+                        }
+                    }
+                });
+            standardLoopThread.run();
+            obsticleAvoidanceThrad.run();
+
+            while(true) if(finishedStacking == true) break;
+            sleep(5000);
             if(randomization == 3) {
                 drive.followTrajectory(park3);
             } else if(randomization ==2){
@@ -521,6 +545,8 @@ public class leftSideSplineAuto extends LinearOpMode {
         //this.latchEngaged = true;
         depositPosition = 2;
         this.targetDepositPosition = (C.depositPositions[depositPosition]) - 0.17;
+        conesStacked--;
+        hasIntaked = true;
         sleep(250);
     }
 

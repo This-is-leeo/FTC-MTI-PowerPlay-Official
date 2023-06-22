@@ -13,7 +13,7 @@ public class sampleDistance extends LinearOpMode{
     double distance;
 
     public void runOpMode() throws InterruptedException {
-        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "name"));
+        Sensor2 = new analogDistanceDriver(hardwareMap.get(AnalogInput.class, "RightSensor"));
         waitForStart();
         while(opModeIsActive()) {
 
