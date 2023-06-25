@@ -111,8 +111,8 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
     private ServoMotor leftArm;
     private ServoMotor rightArm;
     int a;
-    private static final double turretP = 3.2;
-    private static final double turretI = 1.2;
+    private static final double turretP = 3.6;
+    private static final double turretI = 1.4;
     private static final double turretD = 0;
 
     private static final double pitchP = 3.2;
@@ -254,6 +254,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
     private void updateTelemetry() {
         telemetry.addData("pitch TS", this.pitchTS);
         telemetry.addData("latchEngaged" , this.latchEngaged);
+        telemetry.addData("turret target pos", this.targetTurretPosition);
         telemetry.addData("turret pos", this.turret.getCurrentPosition());
         telemetry.update();
     }
@@ -294,7 +295,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
         this.clawOpen = true;
         frontArmPosition = 0;
         moveFrontArm();
-        moveArm(armPosition);
+        this.targetArmPosition = 0.3;
     }
     private void moveDeposit(){
         this.targetDepositPosition = (C.depositPositions[depositPosition]);
@@ -408,7 +409,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
                     .lineToLinearHeading(new Pose2d(-36, -2, Math.toRadians(-90)))
                     .build();
             traj1 = drive.trajectoryBuilder(traj.end())
-                    .lineToLinearHeading(new Pose2d(-38, -10, Math.toRadians(-180)))
+                    .lineToLinearHeading(new Pose2d(-38, -12.5, Math.toRadians(-180))) //-12 y, -180
                     .build();
             park1 = drive.trajectoryBuilder(traj1.end())
                     .lineToLinearHeading(new Pose2d(-11.5, -12, Math.toRadians(-180)))
@@ -430,7 +431,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
             this.targetTurretPosition = 0.5;
             this.secondThread.run();
             drive.followTrajectory(traj);
-            this.targetPitchPosition = 0.39;
+            this.targetPitchPosition = 0.41;
             this.targetTurretPosition = 0.4;
             drive.followTrajectory(traj1);
 
@@ -446,7 +447,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
             intakeOut(C.getTargetFrontArmPosition(5));
             sleep(550);
             for(int j = 4; j>=0; j--) {
-                this.targetTurretPosition = 0.5;
+                //this.targetTurretPosition = 0.5;
                 sleep(125);
                 intakeBack();
                 targetPitchPosition = 0.55;
@@ -454,7 +455,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
                 this.clawOpen = true;
                 sleep(500);
 
-                targetPitchPosition = 0.39;
+                targetPitchPosition = 0.41;
                 this.targetTurretPosition = 0.4;
                 if(j == 0) break;
                 preIntakeMode(j);
@@ -481,11 +482,17 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
             targetPitchPosition = 0.7;
             targetTurretPosition = 0.23;
 
-                    if(randomization == 3) {
+                    if(randomization == 1) {
+
+                        intakeBack();
                         drive.followTrajectory(park3);
                     } else if(randomization ==2){
+
+                        intakeBack();
                         drive.followTrajectory(park2);
-                    } else if(randomization ==1) {
+                    } else if(randomization == 3) {
+
+                        intakeBack();
                         drive.followTrajectory(park1);
                     }
         }
@@ -508,7 +515,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
         this.clawOpen = true;
 //        frontArmPosition = 0;
         moveFrontArm1(position);
-        moveArm(armPosition);
+        this.targetArmPosition = 0.36;
     }
     private void score(){
         linSlideUp();
@@ -521,7 +528,7 @@ public class LeftSubstationPoleAuton extends LinearOpMode {
     }
 
     private void preIntakeMode(int i){
-        this.targetArmPosition = 0.3;
+        this.targetArmPosition = 0.2;
         this.targetFrontArmPosition = C.getTargetFrontArmPosition(i);
     }
 

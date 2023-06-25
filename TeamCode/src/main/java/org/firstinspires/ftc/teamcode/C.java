@@ -68,7 +68,7 @@ public class C {
     public static final double[] clawPositions= {0.6,0};
     public static final double leftArmLB = 0.5;
     public static final double leftArmUB = .84;
-    public static final double[] armPositions= {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1};
+    public static final double[] armPositions= {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; //was 0.45
     public static final double rightArmLB = 0.5;
     public static final double rightArmUB = .84;
     public static final double[] rightArmPositions= {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1};

@@ -111,8 +111,8 @@ public class RightSubstationPoleAuton extends LinearOpMode {
     private ServoMotor leftArm;
     private ServoMotor rightArm;
     int a;
-    private static final double turretP = 3.2;
-    private static final double turretI = 1.2;
+    private static final double turretP = 3.6;
+    private static final double turretI = 1.4;
     private static final double turretD = 0;
 
     private static final double pitchP = 3.2;
@@ -254,6 +254,7 @@ public class RightSubstationPoleAuton extends LinearOpMode {
     private void updateTelemetry() {
         telemetry.addData("pitch TS", this.pitchTS);
         telemetry.addData("latchEngaged" , this.latchEngaged);
+        telemetry.addData("turret target pos", this.targetTurretPosition);
         telemetry.addData("turret pos", this.turret.getCurrentPosition());
         telemetry.update();
     }
@@ -408,13 +409,13 @@ public class RightSubstationPoleAuton extends LinearOpMode {
                     .lineToLinearHeading(new Pose2d(36, -2, Math.toRadians(-90)))
                     .build();
             traj1 = drive.trajectoryBuilder(traj.end())
-                    .lineToLinearHeading(new Pose2d(38, -10, Math.toRadians(0)))
+                    .lineToLinearHeading(new Pose2d(38, -11, Math.toRadians(0)))
                     .build();
             park1 = drive.trajectoryBuilder(traj1.end())
                     .lineToLinearHeading(new Pose2d(11.5, -12, Math.toRadians(0)))
                     .build();
             park2 = drive.trajectoryBuilder(traj1.end())
-                    .lineToLinearHeading(new Pose2d(40, -12.1, Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(-90)))
                     .build();
             park3 = drive.trajectoryBuilder(traj1.end())
                     .lineToLinearHeading(new Pose2d(59, -12, Math.toRadians(0)))
@@ -433,8 +434,8 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             this.targetTurretPosition = 0.5;
             this.secondThread.run();
             drive.followTrajectory(traj);
-            this.targetPitchPosition = 0.39;
-            this.targetTurretPosition = 0.64;
+            this.targetPitchPosition = 0.42;
+            this.targetTurretPosition = 0.62;
             drive.followTrajectory(traj1);
 
             this.score();
@@ -450,15 +451,15 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             sleep(550);
             for(int j = 4; j>=0; j--) {
 
-                targetTurretPosition = 0.55;
+//                targetTurretPosition = 0.55;
                 sleep(125);
                 intakeBack();
                 targetPitchPosition = 0.55;
                 sleep(900);
                 this.clawOpen = true;
-                targetTurretPosition = 0.64;
+                targetTurretPosition = 0.63;
                 sleep(400);
-                targetPitchPosition = 0.39;
+                targetPitchPosition = 0.42;
                 if(j == 0) break;
                 preIntakeMode(j);
                 this.score();
@@ -485,11 +486,16 @@ public class RightSubstationPoleAuton extends LinearOpMode {
             targetTurretPosition = 0.23;
 
             if(randomization == 3) {
+                intakeBack();
+
                 drive.followTrajectory(park3);
             } else if(randomization ==2){
-                sleep(200);
+//                sleep(200);
+                intakeBack();
+
                 drive.followTrajectory(park2);
             } else if(randomization ==1) {
+                intakeBack();
                 drive.followTrajectory(park1);
             }
         }

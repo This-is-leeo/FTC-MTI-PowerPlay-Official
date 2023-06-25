@@ -329,28 +329,29 @@ import org.firstinspires.ftc.teamcode.utils.M;
                             break;
 
                         case 5:
-//                            this.latchEngaged = true;
-//                            this.updateAll();
-                            switch(scorePos){
-                                case 1:
-                                    scoringPosition1();
-                                    break;
-                                case 2:
-                                    scoringPosition2();
-                                    break;
-                                case 3:
-                                    scoringPosition3();
-                                    break;
-                                case 4:
-                                    scoringPosition4();
-                                    break;
-                                case 5:
-                                    scoringPosition5();
-                                    break;
-                                case 6:
-                                    scoringPosition6();
-                                    break;
-                            }
+////                            this.latchEngaged = true;
+////                            this.updateAll();
+//                            switch(scorePos){
+//                                case 1:
+//                                    scoringPosition1();
+//                                    break;
+//                                case 2:
+//                                    scoringPosition2();
+//                                    break;
+//                                case 3:
+//                                    scoringPosition3();
+//                                    break;
+//                                case 4:
+//                                    scoringPosition4();
+//                                    break;
+//                                case 5:
+//                                    scoringPosition5();
+//                                    break;
+//                                case 6:
+//                                    scoringPosition6();
+//                                    break;
+                            scoringPosition1();
+
                             cycleStep++;
                             break;
                         default:
@@ -371,16 +372,14 @@ import org.firstinspires.ftc.teamcode.utils.M;
                     moveArm(armPosition);
                 })
                 .subscribeEvent(Controller.EventType.DPAD_UP, () -> {
-                    scorePos = 1;
-                    this.scoringPosition1();
-                })
-                .subscribeEvent(Controller.EventType.DPAD_LEFT, () -> {
                     scorePos = 2;
                     this.scoringPosition2();
                 })
+                .subscribeEvent(Controller.EventType.DPAD_LEFT, () -> {
+                    linSlideHigh = false;
+                })
                 .subscribeEvent(Controller.EventType.DPAD_RIGHT, () -> {
-                    scorePos = 3;
-                    this.scoringPosition3();
+                    linSlideHigh = true;
                 })
                 .subscribeEvent(Controller.EventType.DPAD_DOWN, () -> {
                     scorePos = 7;
@@ -398,21 +397,6 @@ import org.firstinspires.ftc.teamcode.utils.M;
                 .subscribeEvent(Controller.EventType.Y, () -> {
                     this.targetFrontArmPosition = 0.47;
                     intakeStep = 1;
-                })
-                .subscribeEvent(Controller.EventType.DPAD_UP, () -> {
-                    scorePos = 1;
-                    this.scoringPosition1();
-                })
-                .subscribeEvent(Controller.EventType.DPAD_LEFT, () -> {
-                    scorePos = 2;
-                    this.scoringPosition2();
-                })
-//                .subscribeEvent(Controller.EventType.DPAD_RIGHT, () -> {
-//                    scorePos = 3;
-//                    this.scoringPosition3();
-//                })
-                .subscribeEvent(Controller.EventType.DPAD_RIGHT, () -> {
-                    this.midPole();
                 })
                 .subscribeEvent(Controller.EventType.DPAD_DOWN, () -> {
                     this.frontArmPosition = (this.frontArmPosition + 1) % C.frontArmPositions.length;
@@ -522,8 +506,6 @@ import org.firstinspires.ftc.teamcode.utils.M;
     }
     private void moveDeposit(){
         this.targetDepositPosition = (C.depositPositions[depositPosition]) - 0.0*(C.depositPositions[depositPosition] * (M.clamp(this.targetPitchPosition, 0, 0.8)));
-        this.updatePosition();
-        this.updateServo();
     }
     private void moveFrontArm(){
         targetFrontArmPosition = this.frontArmPositions[frontArmPosition] - (0.1*this.frontArmPositions[frontArmPosition]*M.clamp(this.pitch.getCurrentPosition(),0.5,1.5));
@@ -671,6 +653,14 @@ import org.firstinspires.ftc.teamcode.utils.M;
         linSlideUp();
         this.targetTurretPosition = .775;
     }
+    private void test(){
+        pitchRTP = true;
+        linSlideRTP = true;
+        this.latchEngaged = true;
+        this.dump();
+        movePitch(1);
+        linSlideUp();
+    }
     private void scoringPosition1TurretRight(){
         pitchRTP = true;
         linSlideRTP = true;
@@ -784,6 +774,8 @@ import org.firstinspires.ftc.teamcode.utils.M;
                 scoringPosition1TurretLeft();
             } else if(gamepad2.right_trigger > 0.3) {
                 scoringPosition1TurretRight();
+            } else if(gamepad1.dpad_up) {
+                scoringPosition1();
             }
             this.interact();
             this.updateAll();

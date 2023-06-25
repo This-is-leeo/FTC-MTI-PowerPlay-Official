@@ -44,9 +44,9 @@ public class MeepMeepTesting {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(800);
 
-        Pose2d initialPosition = new Pose2d(-36, -60, Math.toRadians(-90));
-        Pose2d secondPosition = new Pose2d(-36, -24, Math.toRadians(-90));
-        Pose2d finalPosition = new Pose2d(-24, -10, Math.toRadians(180));
+        Pose2d initialPosition = new Pose2d(36, -60, Math.toRadians(-90));
+        Pose2d secondPosition = new Pose2d(36, 2, Math.toRadians(-90));
+        Pose2d finalPosition = new Pose2d(24, -10, Math.toRadians(180));
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
